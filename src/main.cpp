@@ -83,6 +83,7 @@ private:
             showOneNumber(right_num, false); // 显示右侧数字
         }
     }
+
     /// 判断串口是否改变了倒计时时间
     /// \return bool
     bool isChanged() {
@@ -127,29 +128,26 @@ private:
     /// 红灯
     void redLed() {
         digitalWrite(LED_R, HIGH);
-        digitalWrite(LED_G, LOW);
-        digitalWrite(LED_Y, LOW);
         isRedMode = true; // 红灯模式
         countdown(20);
         isRedMode = false; // 非红灯模式
+        digitalWrite(LED_R, LOW);
     }
 
     /// 绿灯
     void greenLed() {
-        digitalWrite(LED_R, LOW);
         digitalWrite(LED_G, HIGH);
-        digitalWrite(LED_Y, LOW);
         tone(SPEAKER, SPEAKER_FREQ);
         countdown(15);
         noTone(SPEAKER);
+        digitalWrite(LED_G, LOW);
     }
 
     /// 黄灯
     void yellowLed() {
-        digitalWrite(LED_R, LOW);
-        digitalWrite(LED_G, LOW);
         digitalWrite(LED_Y, HIGH);
         countdown(10);
+        digitalWrite(LED_Y, LOW);
     }
 };
 
