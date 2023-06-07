@@ -1,5 +1,6 @@
 <!-- TOC -->
 * [作业内容](#作业内容)
+* [已知问题](#已知问题)
 * [项目结构](#项目结构)
   * [源码](#源码)
   * [protues项目文件](#protues项目文件)
@@ -14,6 +15,10 @@
 采用物联网通讯，远程可以修改数码管的显示值。当绿灯亮时，开启喇叭督促行人快速通过。运用保险丝电路来代替行人闯灯提示
 （一旦保险丝短，向上位机发送英文“someone across the road”）
 
+# 已知问题
+
+1. 倒计时时间不是严格的1秒
+
 # 项目结构
 
 ## 源码
@@ -24,14 +29,14 @@
 
 ## protues项目文件
 
-`protues_workspace/homeworkd.pdsprj`
+`protues_workspace/homework.pdsprj`
 
 # 图片
 
 ## 元件布局
 
-![](.\imgs\before.png)
+![](imgs/before.png)
 
 ## 模拟结果
 
-![](.\imgs\run.png)
+![](imgs/run.png)
