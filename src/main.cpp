@@ -37,8 +37,6 @@ public:
 private:
     // 远程可修改的倒计时数字
     unsigned char num{};
-    // 是否处于红灯模式
-    bool isRedMode{};
 
     /// 数码管显示一个数字, 只能为: 0 - 9, 否则不显示
 /// \param num 显示的数字
@@ -119,7 +117,7 @@ private:
         for (short i = time; i > 0; --i) {
             if (isChanged()) i = num;// 如果数字被修改, 那么从修改后的数字开始倒计时
             showNumber(i);
-            if (isRedMode && analogRead(VOLTS) == 0) { // 红灯模式,并且电压表为0
+            if (digitalRead(LED_R) && analogRead(VOLTS) == 0) { // 红灯模式,并且电压表为0
                 Serial.println("Someone across the road!");
             }
         }
@@ -128,9 +126,7 @@ private:
     /// 红灯
     void redLed() {
         digitalWrite(LED_R, HIGH);
-        isRedMode = true; // 红灯模式
         countdown(20);
-        isRedMode = false; // 非红灯模式
         digitalWrite(LED_R, LOW);
     }
 
