@@ -18,10 +18,6 @@
 #define SPEAKER_FREQ 700
 // 蜂鸣器IO
 #define SPEAKER 15
-// 字节缓冲区大小
-#define BUFFER_SIZE 8
-// 串口接受数据流的时间
-#define TIME_OUT 10
 // 电压表IO
 #define VOLTS 16
 // 数码管 0 - 9 的编码
@@ -31,14 +27,27 @@ static const unsigned char numbers[10] = {0b11111100, 0b01100000, 0b11011010, 0b
 
 class DreamOS {
 public:
-/// 数码管显示一个数字, 只能为: 0 - 9, 否则不显示
+    /// 启动系统
+    void run() {
+        redLed();
+        greenLed();
+        yellowLed();
+    }
+
+private:
+    // 远程可修改的倒计时数字
+    unsigned char num{};
+    // 是否处于红灯模式
+    bool isRedMode{};
+
+    /// 数码管显示一个数字, 只能为: 0 - 9, 否则不显示
 /// \param num 显示的数字
 /// \param isLeft 是否显示在左侧, 默认为真
     static void showOneNumber(unsigned char num, bool isLeft) {
-        if (num > 9) {
+    /*    if (num > 9) {
             Serial.println("out of range, only can show: 0 - 9");
             return;
-        }
+        }*/
         digitalWrite(LEFT, LOW); // 左侧不亮
         digitalWrite(RIGHT, LOW); // 右侧不亮
         if (isLeft) {
@@ -62,10 +71,10 @@ public:
 /// 显示两位数字
 /// \param num 显示的数字
     static void showNumber(unsigned char num) {
-        if (num > 99) {
-            Serial.println("out of range, only can show: 0 - 99");
-            return;
-        }
+        /*       if (num > 99) {
+                   Serial.println("out of range, only can show: 0 - 99");
+                   return;
+               }*/
         unsigned char left_num = num / 10;
         unsigned char right_num = num % 10;
         // 显示1秒钟, 闪烁显示
@@ -75,61 +84,31 @@ public:
         }
     }
 
-    /// 判断一个字符是否是数字字符
-    /// \param c 待判断的字符
-    /// \return bool
-    static bool isNumber(char c) {
-        if (c >= 0x30 && c <= 0x39) return true;
-        return false;
-    }
-
-    DreamOS() {
-        // 串口接受数据流的时间
-        Serial.setTimeout(TIME_OUT);
-    }
-
-    /// 判断红绿灯倒计时数字是否被修改
-    /// \return bool
     bool hasChanged() {
-        // 连接到串口
-        if (Serial.available()) {
-            // 仅解析接收到2位字符或1位字符, 其余情况均为异常
-            size_t len = Serial.readBytes(serialBuffer, BUFFER_SIZE);
-            if (len == 1 && isNumber(serialBuffer[0])) { // 接收到一位数
-                num = serialBuffer[0] - 0x30;
-                Serial.print("[success]: num = ");
-                Serial.println(num);
-                return true;
-            } else if (len == 2 && isNumber(serialBuffer[0]) && isNumber(serialBuffer[1])) { // 接收到两位数
-                unsigned char tensDigit, digits;
-                digits = serialBuffer[1] - 0x30;
-                tensDigit = serialBuffer[0] - 0x30;
-                num = tensDigit * 10 + digits;
-                Serial.print("[success]: num = ");
-                Serial.println(num);
-                return true;
-            } else { // 其他位数, 则释放掉多余的数据
-                for (; Serial.readBytes(serialBuffer, BUFFER_SIZE) > 0;);
-                Serial.println("[ERROR]: only allowed input a number: 0 - 99.");
+        if (Serial.available()) { //缓存区有数据
+            int first = Serial.read(); // read: 若有数据, 则返回字符否则返回-1
+            if (first >= '0' && first <= '9') {
+                int second = Serial.read();
+                if (second == -1) { // 只有一位数
+                    num = first - '0';
+                    Serial.print("[success]: num = ");
+                    Serial.println(num);
+                    return true;
+                }
+                if (Serial.read() == -1 && second >= '0' && second <= '9') { //不存在第三位数并且第二位数据是数字
+                    num = (first - '0') * 10 + second - '0';
+                    Serial.print("[success]: num = ");
+                    Serial.println(num);
+                    return true;
+                }
             }
+            // 释放多余的数据
+            for (; Serial.read() != -1;);
+            Serial.println("[ERROR]: only allowed input a number: 0 - 99.");
         }
         return false;
     }
 
-    /// 启动系统
-    void run() {
-        redLed();
-        greenLed();
-        yellowLed();
-    }
-
-private:
-    // 将串口接收数据存入到缓冲区
-    char serialBuffer[BUFFER_SIZE]{};
-    // 远程可修改的倒计时数字
-    unsigned char num{};
-    // 是否处于红灯模式
-    bool isRedMode{};
 
     /// 数码管倒计时
     /// \param time 显示的倒计时时间
