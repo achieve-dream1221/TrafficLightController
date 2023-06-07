@@ -29,30 +29,25 @@ class DreamOS {
 public:
     /// 启动系统
     void run() {
-        redLed();
-        greenLed();
-        yellowLed();
+        onRed();
+        onGreen();
+        onYellow();
     }
 
 private:
     // 远程可修改的倒计时数字
     unsigned char num{};
 
-    /// 数码管显示一个数字, 只能为: 0 - 9, 否则不显示
+    /// 数码管显示一次一个数字, 并且只会闪烁短暂的一次
 /// \param num 显示的数字
-/// \param isLeft 是否显示在左侧, 默认为真
-    static void showOneNumber(unsigned char num, bool isLeft) {
+/// \param isLeft 是否显示在左侧
+    static void showOnceNumber(unsigned char num, bool isLeft) {
         /*    if (num > 9) {
                 Serial.println("out of range, only can show: 0 - 9");
                 return;
             }*/
-        digitalWrite(LEFT, LOW); // 左侧不亮
-        digitalWrite(RIGHT, LOW); // 右侧不亮
-        if (isLeft) {
-            digitalWrite(LEFT, HIGH); // 左侧亮
-        } else {
-            digitalWrite(RIGHT, HIGH); // 右侧亮
-        }
+        // 开启数码管
+        isLeft ? digitalWrite(LEFT, HIGH) : digitalWrite(RIGHT, HIGH);
         num = numbers[num];
         unsigned char pin = 3;
         for (char i = 7; i >= 0; --i) {
@@ -64,21 +59,21 @@ private:
             ++pin;
         }
         delay(FREQ);
+        // 关闭数码管
+        isLeft ? digitalWrite(LEFT, LOW) : digitalWrite(RIGHT, LOW);
     }
 
-/// 显示两位数字
-/// \param num 显示的数字
-    static void showNumber(unsigned char num) {
+    /// 显示两位数字
+    /// \param num 显示的数字
+    static void showTwoNumber(unsigned char num) {
         /*       if (num > 99) {
                    Serial.println("out of range, only can show: 0 - 99");
                    return;
                }*/
-        unsigned char left_num = num / 10;
-        unsigned char right_num = num % 10;
-        // 显示1秒钟, 闪烁显示
+        // 显示1秒钟, 闪烁显示, 利用视觉暂留达到显示多个数字
         for (int count = 0; count < 1000 / (FREQ * 4); ++count) {
-            showOneNumber(left_num, true); // 显示左侧数字
-            showOneNumber(right_num, false); // 显示右侧数字
+            showOnceNumber(num / 10, true); // 显示左侧数字
+            showOnceNumber(num % 10, false); // 显示右侧数字
         }
     }
 
@@ -115,23 +110,22 @@ private:
     void countdown(unsigned char time) {
         // 倒计时
         for (short i = time; i > 0; --i) {
+            // 红灯模式,并且电压表为0, 优先级应该比其他两个任务高, 因此放在第一句
+            if (digitalRead(LED_R) && analogRead(VOLTS) == 0) Serial.println("Someone across the road!");
             if (isChanged()) i = num;// 如果数字被修改, 那么从修改后的数字开始倒计时
-            showNumber(i);
-            if (digitalRead(LED_R) && analogRead(VOLTS) == 0) { // 红灯模式,并且电压表为0
-                Serial.println("Someone across the road!");
-            }
+            showTwoNumber(i);
         }
     }
 
     /// 红灯
-    void redLed() {
+    void onRed() {
         digitalWrite(LED_R, HIGH);
         countdown(20);
         digitalWrite(LED_R, LOW);
     }
 
     /// 绿灯
-    void greenLed() {
+    void onGreen() {
         digitalWrite(LED_G, HIGH);
         tone(SPEAKER, SPEAKER_FREQ);
         countdown(15);
@@ -140,7 +134,7 @@ private:
     }
 
     /// 黄灯
-    void yellowLed() {
+    void onYellow() {
         digitalWrite(LED_Y, HIGH);
         countdown(10);
         digitalWrite(LED_Y, LOW);
