@@ -44,10 +44,10 @@ private:
 /// \param num 显示的数字
 /// \param isLeft 是否显示在左侧, 默认为真
     static void showOneNumber(unsigned char num, bool isLeft) {
-    /*    if (num > 9) {
-            Serial.println("out of range, only can show: 0 - 9");
-            return;
-        }*/
+        /*    if (num > 9) {
+                Serial.println("out of range, only can show: 0 - 9");
+                return;
+            }*/
         digitalWrite(LEFT, LOW); // 左侧不亮
         digitalWrite(RIGHT, LOW); // 右侧不亮
         if (isLeft) {
@@ -83,8 +83,9 @@ private:
             showOneNumber(right_num, false); // 显示右侧数字
         }
     }
-
-    bool hasChanged() {
+    /// 判断串口是否改变了倒计时时间
+    /// \return bool
+    bool isChanged() {
         if (Serial.available()) { //缓存区有数据
             int first = Serial.read(); // read: 若有数据, 则返回字符否则返回-1
             if (first >= '0' && first <= '9') {
@@ -115,7 +116,7 @@ private:
     void countdown(unsigned char time) {
         // 倒计时
         for (short i = time; i > 0; --i) {
-            if (hasChanged()) i = num;// 如果数字被修改, 那么从修改后的数字开始倒计时
+            if (isChanged()) i = num;// 如果数字被修改, 那么从修改后的数字开始倒计时
             showNumber(i);
             if (isRedMode && analogRead(VOLTS) == 0) { // 红灯模式,并且电压表为0
                 Serial.println("Someone across the road!");
