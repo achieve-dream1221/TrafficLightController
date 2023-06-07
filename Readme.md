@@ -30,8 +30,8 @@
 
 ## 元件布局
 
-![](imgs\before.png)
+![](.\imgs\before.png)
 
 ## 模拟结果
 
-![](imgs\run.png)
+![](.\imgs\run.png)
