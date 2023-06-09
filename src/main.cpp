@@ -52,29 +52,34 @@ private:
                 return;
             }*/
         // 开启数码管
+#if COMMON_ANODE
         isLeft ? digitalWrite(LEFT, HIGH) : digitalWrite(RIGHT, HIGH);
+#else
+        isLeft ? digitalWrite(LEFT, LOW) : digitalWrite(RIGHT, LOW);
+#endif
         num = numbers[num];
         for (char i = 7; i >= 0; --i) {
 #if COMMON_ANODE // 共阳极
             if (num & (1 << i)) { // 1
-
-                digitalWrite(digital_pins[7 - i], LOW); // 共阳极要LOW才会亮, 共阴极要HIGH才亮
+                digitalWrite(digital_pins[7 - i], LOW); // 共阳极要LOW才会亮
             } else { // 0
                 digitalWrite(digital_pins[7 - i], HIGH);
             }
 #else // 共阴极
             if (num & (1 << i)) { // 1
-
-                digitalWrite(digital_pins[7 - i], HIGH); // 共阳极要LOW才会亮, 共阴极要HIGH才亮
+                digitalWrite(digital_pins[7 - i], HIGH); //共阴极要HIGH才亮
             } else { // 0
                 digitalWrite(digital_pins[7 - i], LOW);
             }
 #endif
-
         }
         delay(FREQ);
         // 关闭数码管
+#if COMMON_ANODE
         isLeft ? digitalWrite(LEFT, LOW) : digitalWrite(RIGHT, LOW);
+#else
+        isLeft ? digitalWrite(LEFT, HIGH) : digitalWrite(RIGHT, HIGH);
+#endif
     }
 
     /// 显示两位数字
