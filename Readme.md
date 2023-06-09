@@ -27,9 +27,9 @@
 
 | 注意: IO引脚设置请修改代码开头的宏定义, 初始化引脚, 请注意setup()函数的引脚初始化
 
-## protues项目文件
+## proteus项目文件
 
-`protues_workspace/homework.pdsprj`
+`proteus_workspace/homework.pdsprj`
 
 # 图片
 
