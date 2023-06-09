@@ -8,18 +8,23 @@
 #define LED_R 13
 #define LED_G 14
 #define LED_Y 2
-// 显示一个数字, 然后暂停FREQ毫秒, 显示另一个数字
-#define FREQ 30
-// 数码管左侧
-#define LEFT 11
-// 数码管右侧
-#define RIGHT 12
 // 蜂鸣器频率
 #define SPEAKER_FREQ 700
 // 蜂鸣器IO
 #define SPEAKER 15
 // 电压表IO
 #define VOLTS 16
+// 显示一个数字, 然后暂停FREQ毫秒, 显示另一个数字
+#define FREQ 30
+// 本项目使用的两个数字的数码管
+// 是否是共阳极, 设置为true或false
+#define COMMON_ANODE true
+// 数码管显示左侧数字IO
+#define LEFT 11
+// 数码管显示右侧数字IO
+#define RIGHT 12
+// 数码管负责控制每个小灯亮灭的IO
+static const unsigned char digital_pins[8] = {3, 4, 5, 6, 7, 8, 9, 10};
 // 数码管 0 - 9 的编码
 static const unsigned char numbers[10] = {0b11111100, 0b01100000, 0b11011010, 0b11110010, 0b01100110,
                                           0b10110110, 0b10111110, 0b11100000, 0b11111110, 0b11110110};
@@ -49,14 +54,23 @@ private:
         // 开启数码管
         isLeft ? digitalWrite(LEFT, HIGH) : digitalWrite(RIGHT, HIGH);
         num = numbers[num];
-        unsigned char pin = 3;
         for (char i = 7; i >= 0; --i) {
-            if (num & (1 << i)) {
-                digitalWrite(pin, LOW);
-            } else {
-                digitalWrite(pin, HIGH);
+#if COMMON_ANODE // 共阳极
+            if (num & (1 << i)) { // 1
+
+                digitalWrite(digital_pins[7 - i], LOW); // 共阳极要LOW才会亮, 共阴极要HIGH才亮
+            } else { // 0
+                digitalWrite(digital_pins[7 - i], HIGH);
             }
-            ++pin;
+#else // 共阴极
+            if (num & (1 << i)) { // 1
+
+                digitalWrite(digital_pins[7 - i], HIGH); // 共阳极要LOW才会亮, 共阴极要HIGH才亮
+            } else { // 0
+                digitalWrite(digital_pins[7 - i], LOW);
+            }
+#endif
+
         }
         delay(FREQ);
         // 关闭数码管
